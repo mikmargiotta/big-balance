@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Color</title>
+	<link href='https://fonts.googleapis.com/css?family=Raleway:300,700|Bitter:400,700' rel='stylesheet' type='text/css'>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.22/p5.min.js"></script>
+	<style>
+		/* Eric Meyer's Reset CSS v2.0 */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{border:0;font-size:100%;font:inherit;vertical-align:baseline;margin:0;padding:0}article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section{display:block}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:none}table{border-collapse:collapse;border-spacing:0}
+canvas { position:fixed; top:0; left:0; z-index:1; }
+/*CLEARFIX*/
+	</style>
+	<script>
+	var sortByProperty = function (property) {
+	    return function (x, y) {
+	        return ((x[property] === y[property]) ? 0 : ((x[property] < y[property]) ? 1 : -1));
+	    };
+	};
+		var dati = '[{"totale":809,"tipo":"amici"},{"totale":1673,"tipo":"likes"},{"totale":338,"tipo":"commenti"},{"totale":4,"tipo":"film"},{"totale":5,"tipo":"tv"},{"totale":3,"tipo":"video"},{"totale":4,"tipo":"libri"},{"totale":481,"tipo":"pagine"},{"totale":24,"tipo":"musica"},{"totale":5,"tipo":"albums"},{"totale":86,"tipo":"foto"},{"totale":194,"tipo":"post"}]';
+		var elementi = JSON.parse(dati);
+		aggiungiInfo(elementi);
+		elementi= elementi.sort(sortByProperty('totale'));
+		function aggiungiInfo(elementi){
+			for (var i = 0; i < elementi.length; i++) {
+				switch (elementi[i].tipo) {
+					case "amici" :
+						elementi[i].colore = 0;
+						elementi[i].nome = 'Amici';
+						break;
+					case "likes" :
+						elementi[i].colore = 90;
+						elementi[i].nome = 'Mi piace';
+						break;
+					case "commenti" :
+						elementi[i].colore = 45;
+						elementi[i].nome = 'Commenti';
+						break;
+					case "film" :
+						elementi[i].colore = 235;
+						elementi[i].nome = 'Film';
+						break;
+					case "tv" :
+						elementi[i].colore = 215;
+						elementi[i].nome = 'Programmi Tv';
+						break;
+					case "video" :
+						elementi[i].colore = 270;
+						elementi[i].nome = 'Video';
+						break;
+					case "libri" :
+						elementi[i].colore = 230;
+						elementi[i].nome = 'Libri';
+						break;
+					case "pagine" :
+						elementi[i].colore = 225;
+						elementi[i].nome = 'Pagine piaciute';
+						break;
+					case "musica" :
+						elementi[i].colore = 220;
+						elementi[i].nome = 'Musica';
+						break;
+					case "albums" :
+						elementi[i].colore = 0;
+						elementi[i].nome = 'Albums';
+						break;
+					case "foto" :
+						elementi[i].colore = 5;
+						elementi[i].nome = 'Foto';
+						break;
+					case "post" :
+						elementi[i].colore = 315;
+						elementi[i].nome = 'Post';
+						break;
+				}
+			};
+		}
+
+		//Skecth
+		var bubbles = [];
+		var massimo = elementi[0].totale;
+		function setup(){
+			//console.log(massimo);
+			createCanvas(windowWidth, windowHeight);
+			
+			smooth();
+			colorMode(HSB, 360, 100, 100, 100);
+			/*for (var i = 0; i < elementi.length; i++) {
+				bubbles[i] = new Bubble(random(width), height/2,elementi[i].totale,elementi[i].colore,elementi[i].nome, massimo);
+			};*/
+		}
+
+		function draw(){
+			clear();
+			for (var i = 0; i < bubbles.length; i++){
+			    bubbles[i].display();
+			    //bubbles[i].move();
+			    if( bubbles[i].isHover()){
+			      var a = bubbles.indexOf(bubbles[i]);
+			      for (var j = 0; j < bubbles.length; j++){
+			        if(j != a){
+			          bubbles[j].grigio();
+			        }else{
+			          bubbles[a].colore();
+			        }
+			      }
+			      
+			      //console.log(a);
+			    }else{
+			      bubbles[i].base();
+			    }
+			}
+		}
+
+		var stepbystep = setInterval(intervallo, 1000);
+		var i = 0;
+		function intervallo(){
+		  var a = new Bubble(random(width), height/2,elementi[i].totale,elementi[i].colore,elementi[i].nome, massimo);
+		  bubbles.push(a);
+		  i++;
+		  if(bubbles.length == elementi.length){
+		    clearInterval(stepbystep);
+		  }
+		}
+
+		function Bubble(x,y,diametro,colore,nome,massimo){
+			this.massimo = massimo/8;
+			this.d = map(diametro,0,height,2,this.massimo);
+			this.r = this.d/2;
+			this.x = constrain(x, this.r+2, width-(this.r+2));
+			this.y = y;
+			this.coloreFill = color(colore,50,80,80);
+			this.coloreStroke = color(colore,50,60,80);
+			this.testo = nome + " " + diametro;
+
+			//easing
+			var duration = 1000/60; //60fps
+			var value = 0;
+			var fattore = 1.2;
+			var target = this.d;
+			var over = target * fattore;
+			var easing = 0.05;
+			  
+			var inc = setInterval(exec, duration);
+			var dec;
+
+			function exec(){
+			    if(ceil(value) >= over){
+			      clearInterval(inc);
+			      dec = setInterval(decr, duration);
+			    }else{
+			      //value++;
+			      value += easing * (over - value);
+			    }
+			  }
+			function decr(){
+			    if(ceil(value) <= target){
+			      clearInterval(dec);
+			    }else{
+			      value -= easing * (value -target);
+			    }
+			}
+
+			this.display = function(){
+				strokeWeight(2);
+				stroke(this.coloreStroke);
+				fill(this.coloreFill);
+				ellipse(this.x, this.y, value,value);
+				//console.log(this.d + " " +this.r);
+			}
+			this.colore = function(){
+			    this.coloreFill = color(colore,50,80,80);
+				this.coloreStroke = color(colore,50,60,80);
+				noStroke();
+				textFont('Bitter');
+				textSize(48);
+				textAlign(RIGHT);
+				text(this.testo, width-10, height-30);
+		  	}
+			this.grigio = function(){
+			    this.coloreFill = color(colore,0,70,80);
+				this.coloreStroke = color(colore,0,50,80);
+			}
+		 	this.base = function(){
+			    this.coloreFill = color(colore,50,80,80);
+				this.coloreStroke = color(colore,50,60,80);
+		 	} 
+			this.isHover = function(){
+		    	var d = dist(mouseX,mouseY, this.x, this.y);
+		    	if(d < this.r){
+		      		return true;
+		    	}else{
+		      		return false;
+		    	}
+		  	}
+
+		}
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
