@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+
+  var ver;
+  var totaleLikes = 0;
+  var totaleComments = 0;
+
+  var countArrayPosts = new Array();
+  var totalePosts = 0;
+
+  var countArrayAlbums = new Array();
+  var totaleAlbums = 0;
+
+  var countArrayPhotos = new Array();
+  var totalePhotos = 0;
+
+  var risposta = 0;
+
+  //FB API init
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+  //FB Script
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+
+  function fbLogin() {
+    FB.login(function(){
+
+        //VIDEOS
+        FB.api("/me/videos?type=uploaded&tagged", function (videos) {
+          if (videos && !videos.error) {
+            //console.log(videos);
+            $('#videos').text("N° "+videos.data.length);
+          }else{
+            console.log("errore "+videos.error);
+          }
+        });
+
+        //FEED
+        FB.api("me/feed?limit=100", function (posts) {
+          if (posts && !posts.error) {
+            countArrayPosts.push(posts);
+            nextDataPosts(posts); 
+          }else{
+            console.log("errore "+posts.error);
+          }
+        });
+
+        //ALBUMS
+        FB.api("me/albums", function (albums) {
+          if (albums && !albums.error) {
+            countArrayAlbums.push(albums);
+            nextDataAlbums(albums);
+            //Photos
+            for (var i = 0; i < albums.data.length; i++) {
+              var albumId = albums.data[i].id;
+              FB.api(albumId+"/photos", function (photos) {
+                if(photos.data.length != 0){
+                  countArrayPhotos.push(photos);
+                  nextDataPhotos(photos);
+                }
+              });
+            };
+            
+          }else{
+            console.log("errore "+albums.error);
+          }
+        });
+      
+    }, {scope: 'user_videos, user_posts, user_photos'});
+  }
+
+  //Get Next Data Post
+  function nextDataPosts(next){
+    if(next.paging.next != undefined){
+      $.get(next.paging.next, function(data) {
+        if(data.data.length != 0){
+          countArrayPosts.push(data);
+          nextDataPosts(data);
+        }else{
+          //Ricerca finita
+          console.log('finito 2 post');
+          for (var i = 0; i < countArrayPosts.length; i++) {
+            totalePosts += countArrayPosts[i].data.length;
+            for (var j = 0; j < countArrayPosts[i].data.length; j++) {
+              postId = countArrayPosts[i].data[j].id;
+              //likes
+              FB.api(postId+"/likes?summary=true", function (likes) {
+                if(likes.data.length != 0){
+                  totaleLikes += likes.summary.total_count;
+                  $('#likes').text("N° "+totaleLikes);
+                }
+              });
+              //comments
+              FB.api(postId+"/comments?summary=true", function (comments) {
+                if(comments.data.length != 0){
+                  totaleComments += comments.summary.total_count;
+                  $('#comments').text("N° "+totaleComments);
+                }
+              });
+            };
+          };
+          $('#posts').text("N° "+totalePosts);
+        }
+      });
+    }else{
+      console.log('finito post');
+    }
+  }
+
+  //Get Next Data Photo
+  function nextDataPhotos(next){
+    if(next.paging.next != undefined){
+      $.get(next.paging.next, function(data) {
+        if(data.data.length != 0){
+          countArrayPhotos.push(data);
+          nextDataPhotos(data);
+        }else{
+          //Ricerca finita
+          console.log('finito 2 photo');
+          
+        }
+      });
+    }else{
+      risposta++;
+      if(totaleAlbums == risposta){
+        console.log('finito photo');
+        for (var i = 0; i < countArrayPhotos.length; i++) {
+          totalePhotos += countArrayPhotos[i].data.length;
+          for (var j = 0; j < countArrayPhotos[i].data.length; j++) {
+              photoId = countArrayPhotos[i].data[j].id;
+              
+          };
+          $('#photos').text("N° "+totalePhotos);
+        }
+      }
+    }
+  }
+
+  //Get Next Data Album
+  function nextDataAlbums(next){
+    if(next.paging.next != undefined){
+      $.get(next.paging.next, function(data) {
+        if(data.data.length != 0){
+          countArrayAlbums.push(data);
+          nextDataAlbums(data);
+        }else{
+          //Ricerca finita
+          console.log('finito 2 album');
+          for (var i = 0; i < countArrayAlbums.length; i++) {
+            totaleAlbums += countArrayAlbums[i].data.length;
+            for (var j = 0; j < countArrayAlbums[i].data.length; j++) {
+              albumId = countArrayAlbums[i].data[j].id;
+
+             
+            };
+          };
+          $('#albums').text("N° "+totaleAlbums);
+        }
+      });
+    }else{
+      console.log('finito album');
+      for (var i = 0; i < countArrayAlbums.length; i++) {
+            totaleAlbums += countArrayAlbums[i].data.length;
+            for (var j = 0; j < countArrayAlbums[i].data.length; j++) {
+              albumId = countArrayAlbums[i].data[j].id;
+              
+            };
+          };
+          $('#albums').text("N° "+totaleAlbums);
+    }
+  }
+  //Verifica 
+  function getA(){
+    
+    console.log(countArrayPosts);
+    console.log(countArrayPhotos);
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <button id="test" onclick="getA()">Test</button>
+  <h1>Videos</h1>
+  <h1 id="videos">N°</h1>
+  <h1>Posts</h1>
+  <h1 id="posts">N°</h1>
+  <h1>Albums</h1>
+  <h1 id="albums">N°</h1>
+  <h1>Photos</h1>
+  <h1 id="photos">N°</h1>
+  <h1>Likes</h1>
+  <h1 id="likes">N°</h1>
+  <h1>Comments</h1>
+  <h1 id="comments">N°</h1>
+</div>
+</body>
+</html>

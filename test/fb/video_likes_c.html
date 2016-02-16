@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+
+  var ver;
+  var totaleLikes = 0;
+  var totaleComments = 0;
+  //FB API
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.3'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+  function fbLogin() {
+    FB.login(function(){
+      
+        FB.api("/me/videos?type=uploaded&tagged", function (videos) {
+          if (videos && !videos.error) {
+            //console.log(videos);
+            for (var i = 0; i < videos.data.length; i++) {
+              videoId = videos.data[i].id;
+              //likes
+              FB.api(videoId+"/likes?summary=total_count", function (likes) {
+                totaleLikes += likes.summary.total_count;
+                $('#likes').text("N° "+totaleLikes);
+              });
+              //comments
+              FB.api(videoId+"/comments?summary=total_count", function (comments) {
+                console.log(comments);
+                totaleComments += comments.summary.total_count;
+                $('#comments').text("N° "+totaleComments);
+              });
+            };
+            $('#totale').text("N° "+videos.data.length);
+          }else{
+            console.log("errore "+videos.error);
+          }
+        });
+      
+    }, {scope: 'user_videos'});
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <h1 id="titolo">Video</h1>
+  <h1 id="totale">N°</h1>
+  <h1>Likes</h1>
+  <h1 id="likes">N°</h1>
+  <h1>Comments</h1>
+  <h1 id="comments">N°</h1>
+</div>
+</body>
+</html>

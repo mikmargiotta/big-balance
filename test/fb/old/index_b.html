@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.19/p5.min.js"></script>
+</head>
+<body>
+  <script>
+  //P5.js
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+  }
+
+  function draw() {
+    
+    noStroke();
+    fill(200,125);
+    ellipse(mouseX,mouseY,25,25);
+    
+  }
+  function mousePressed(){
+    background(255);
+  }
+  function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+  }
+
+  //FB API
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+  function fbLogin() {
+    FB.login(function(){
+      // Note: The call will only work if you accept the permission request
+      FB.api("/me",{fields: 'first_name, last_name'}, function (response) {
+        if (response && !response.error) {
+          console.log(response);
+          $('#first').text(response.first_name);
+          $('#last').text(response.last_name);
+        }
+      });
+      FB.api("/me/feed", function (response) {
+        if (response && !response.error) {
+          console.log(response);
+          $.each(response.data, function(index, val) {
+            if(typeof val.message != 'undefined'){
+             $('#dx').append('<div class="post">'+ val.message +'</div>');
+            }
+          });
+          $('#loginbutton').fadeOut('slow', function() {
+            $('#content').fadeIn('slow');
+          });
+        }
+      });
+    }, {scope: 'email, user_posts'});
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <div id="content">
+      <div id="sx">
+          ciao
+          <h1 id="first"></h1>
+          <h1 id="last"></h1>
+      </div>
+      <div id="dx">
+        <h2>I tuoi post</h2>
+      </div>
+  </div>
+</div>
+</body>
+</html>

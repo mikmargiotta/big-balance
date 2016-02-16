@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+
+  var countArray = new Array();
+  var totaleAlbums = 0;
+  var totalePhotos = 0;
+  var totaleCall = new Array();
+  //FB API
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+  function fbLogin() {
+    FB.login(function(){
+      
+        FB.api("me/albums", function (response) {
+          if (response && !response.error) {
+            console.log(response);
+            countArray.push(response);
+            nextDataPhotos(response);
+          }else{
+            console.log("errore "+response.error);
+          }
+        });
+      
+    }, {scope: 'user_photos'});
+  }
+  function getA(){
+    console.log(countArray);
+  }
+  function nextDataPhotos(next){
+    if(next.paging.next != undefined){
+      $.get(next.paging.next, function(data) {
+          console.log(data);
+          countArray.push(data);
+          nextDataPhotos(data);
+      });
+    }else{
+      //Ricerca finita album
+      console.log('finito album');
+      console.log(countArray.length);
+      for (var i = 0; i < countArray.length; i++) {
+        totaleAlbums += countArray[i].data.length;
+        console.log(totaleAlbums);
+
+        //Ricerca photos
+        for (var j = 0; j < countArray[i].data.length; j++) {
+          var id = countArray[i].data[j].id;
+          FB.api(id+"?fields=count", function (photos) {
+            totalePhotos += photos.count;
+            totaleCall.push(photos);
+            if(totaleAlbums == totaleCall.length){
+              //Ricerca finita photos
+              console.log('finito photos');
+              $('#totale').text("N° "+totaleAlbums+' e N° '+totalePhotos);
+            }
+            
+          });
+        };
+      };
+      $('#totale').text("N° "+totaleAlbums);
+    }
+  }
+   function nextTest(next){
+    if(next.data.length != undefined){
+      console.log(next.paging.next);
+    }
+    
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <h1 id="titolo">Albums e Photos</h1>
+  <h1 id="totale"></h1>
+  <button id="getArray" onclick="getA()">Get Array</button>
+</div>
+</body>
+</html>

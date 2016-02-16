@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+
+  var count = new Array();
+  var elementi = new Array();
+  var totaleLikes = 0;
+  var totaleComments = 0;
+  var call = 0;
+  var tot = 0;
+  var call1 = 0;
+
+  //FB API init
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+  //FB Script
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+
+  function fbLogin() {
+    FB.login(function(){
+        //Post
+        FB.api("me/feed?limit=100", function (posts) {
+          if (posts && !posts.error) {
+            nextData(posts, "post"); 
+          }else{
+            console.log("errore "+posts.error);
+          }
+        });
+
+        //VIDEO
+        FB.api("me/videos?type=uploaded&tagged", function (videos) {
+          if (videos && !videos.error) {
+            nextData(videos, "video"); 
+          }else{
+            console.log("errore "+videos.error);
+          }
+        });
+
+        //PAGINE
+        FB.api("me/likes?limit=100", function (pagine) {
+          if (pagine && !pagine.error) {
+            nextData(pagine, "pagine"); 
+          }else{
+            console.log("errore "+pagine.error);
+          }
+        });
+
+        //PAGINE BOOKS
+        FB.api("me/books?limit=100", function (books) {
+          if (books && !books.error) {
+            nextData(books, "libri"); 
+          }else{
+            console.log("errore "+books.error);
+          }
+        });
+
+        //PAGINE MOVIES
+        FB.api("me/movies?limit=100", function (movies) {
+          if (movies && !movies.error) {
+            nextData(movies, "film"); 
+          }else{
+            console.log("errore "+movies.error);
+          }
+        });
+
+        //PAGINE MUSIC
+        FB.api("me/music?limit=100", function (music) {
+          if (music && !music.error) {
+            nextData(music, "musica"); 
+          }else{
+            console.log("errore "+music.error);
+          }
+        });
+
+        //PAGINE tv
+        FB.api("me/television?limit=100", function (tv) {
+          if (tv && !tv.error) {
+            nextData(tv, "tv"); 
+          }else{
+            console.log("errore "+tv.error);
+          }
+        });
+
+        //FRIENDS
+        FB.api("/me/friends", function (amici) {
+          if (amici && !amici.error) {
+            aggiungiElemento(amici.summary.total_count, 'amici');
+            console.log('finito amici');
+          }else{
+            console.log("errore "+amici.error);
+          }
+        });
+
+        //ALBUMS
+        FB.api("me/albums", function (albums) {
+          if (albums && !albums.error) {
+            nextData(albums, "albums");
+            //FOTO
+            for (var i = 0; i < albums.data.length; i++) {
+              var albumId = albums.data[i].id;
+              FB.api(albumId+"/photos", function (photos) {
+                nextData(photos, "foto");
+              });
+            };
+            
+          }else{
+            console.log("errore "+albums.error);
+          }
+        });
+      
+    }, {scope: 'user_videos, user_posts, user_photos, user_likes, user_friends'});
+  }
+
+  //Get Next Data
+  function nextData(next, nome){
+    if(next.data.length != 0){
+      //console.log(next);
+      if(nome in count) {
+        count[nome].push(next);
+      }
+      else {
+        count[nome] = new Array(next);
+      }
+      if(next.paging.next != undefined){
+        $.get(next.paging.next, function(data) {
+          nextData(data, nome); 
+        });
+      }else{
+        console.log('finito next '+nome);
+      }
+    }else{
+      console.log('finito '+nome);
+      if(nome == 'post');{
+        lc();
+      }
+    }
+  }
+
+  //Conteggio
+  function conta(key){
+    var numero = 0;
+    for (var i = 0; i < count[key].length; i++){
+      numero += count[key][i].data.length;
+      //console.log(count[key][i].data.length);
+      if(i == count[key].length-1){
+        return numero;
+      }
+    }
+  }
+
+  //Riordina gli elementi
+  function riordina(){
+    for(var key in count) {
+      console.log(key+ " "+ conta(key));
+      aggiungiElemento(conta(key), key)
+    }
+  }
+
+  //Aggiugi elemento
+  function aggiungiElemento(tmpTotale, tmpTipo){
+    var tmp = {totale: tmpTotale, tipo: tmpTipo};
+    elementi.push(tmp);
+  }
+
+  //Totale contenuti
+  function totElementi(){
+    var numero = 0;
+    for (var i = 0; i < elementi.length; i++){
+      numero += elementi[i].totale;
+      //console.log(count[key][i].data.length);
+      if(i == elementi.length-1){
+        return numero;
+      }
+    }
+  }
+
+  //Mi piace e commenti
+  function lc(){
+    for (var i = 0; i < count.post.length; i++) {
+      tot += count.post[i].data.length;
+      for (var j = 0; j < count.post[i].data.length; j++) {
+        postId = count.post[i].data[j].id;
+
+        //likes
+        FB.api(postId+"/likes?summary=true", function (likes) {
+          if(likes.data.length != 0){
+            totaleLikes += likes.summary.total_count;
+          }
+          call++;
+          if(tot == call){
+            console.log('finito like');
+            aggiungiElemento(totaleLikes, 'likes');
+          }
+        });
+        //commenti
+        FB.api(postId+"/comments?summary=true", function (comments) {
+          if(comments.data.length != 0){
+            totaleComments += comments.summary.total_count;
+          }
+          call1++;
+          if(tot == call1){
+            console.log('finito commenti');
+            aggiungiElemento(totaleComments, 'commenti');
+          }
+        });
+      };
+    };
+  }
+
+  
+  //Verifica 
+  function getA(){
+    console.log(elementi);
+    console.log(totElementi());
+  }
+  function getB(){
+    riordina();
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <button id="test" onclick="getA()">Test</button>
+  <button id="test" onclick="getB()">Test 2</button>
+  <h1>Videos</h1>
+  <h1 id="videos">N°</h1>
+  <h1>Posts</h1>
+  <h1 id="posts">N°</h1>
+  <h1>Albums</h1>
+  <h1 id="albums">N°</h1>
+  <h1>Photos</h1>
+  <h1 id="photos">N°</h1>
+  <h1>Likes</h1>
+  <h1 id="likes">N°</h1>
+  <h1>Comments</h1>
+  <h1 id="comments">N°</h1>
+</div>
+</body>
+</html>

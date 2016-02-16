@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+
+  var countArray = new Array();
+  var totale = 0;
+  //FB API
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1519278631720519',
+      xfbml      : true,
+      version    : 'v2.5'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+  function fbLogin() {
+    FB.login(function(){
+      
+        FB.api("me/music?limit=100", function (response) {
+          if (response && !response.error) {
+            console.log(response);
+            countArray.push(response);
+            nextData(response);
+          }else{
+            console.log("errore "+response.error);
+          }
+        });
+      
+    }, {scope: 'user_likes'});
+  }
+  function getA(){
+    console.log(countArray);
+  }
+  function nextData(next){
+    if(next.paging.next != undefined){
+      $.get(next.paging.next, function(data) {
+          console.log(data);
+          countArray.push(data);
+          nextData(data);
+      });
+    }else{
+      //Ricerca finita
+      console.log('finito');
+      console.log(countArray.length);
+      for (var i = 0; i < countArray.length; i++) {
+        totale += countArray[i].data.length;
+        console.log(totale);
+      };
+      $('#totale').text("N° "+totale);
+    }
+  }
+   function nextTest(next){
+    if(next.data.length != undefined){
+      console.log(next.paging.next);
+    }
+    
+  }
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <h1 id="titolo">Music (likes)</h1>
+  <h1 id="totale"></h1>
+  <button id="getArray" onclick="getA()">Get Array</button>
+</div>
+</body>
+</html>

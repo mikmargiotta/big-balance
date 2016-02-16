@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fb</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:300,900' rel='stylesheet' type='text/css'>
+  <link href='style.css' rel='stylesheet' type='text/css'>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+</head>
+<body>
+  <script>
+  var elementi = new Object({albums: 5,amici: 808,commenti: 338,film: 4,foto: 86,libri: 4,likes: 1674,musica: 24,pagine: 477,post: 194,tv: 5,video: 3});
+  var tot1 = 10;
+  var tot2 = 20;
+  var nome = "michele";
+  function getA(){
+    var tmp = {totale: tot1, tipo: nome};
+    elementi.push(tmp);
+    var tmp2 = {totale: tot2, tipo: nome};
+    elementi.push(tmp2);
+  }
+  function getB(){
+    console.log(Object.keys(elementi).length);
+    console.log(elementi);
+  }
+
+  function numAttrs(obj) {
+  var count = 0;
+  for(var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      ++count;
+    }
+  }
+  return count;
+}
+  
+</script>
+<div id="wrap">
+  <button id="loginbutton" onclick="fbLogin()">Login with Facebook</button>
+  <button id="test" onclick="getA()">Test</button>
+  <button id="test" onclick="getB()">Test 2</button>
+  <h1>Videos</h1>
+  <h1 id="videos">N°</h1>
+  <h1>Posts</h1>
+  <h1 id="posts">N°</h1>
+  <h1>Albums</h1>
+  <h1 id="albums">N°</h1>
+  <h1>Photos</h1>
+  <h1 id="photos">N°</h1>
+  <h1>Likes</h1>
+  <h1 id="likes">N°</h1>
+  <h1>Comments</h1>
+  <h1 id="comments">N°</h1>
+</div>
+</body>
+</html>
