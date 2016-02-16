@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Big balance</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link href='https://fonts.googleapis.com/css?family=Raleway:300,700|Bitter:400,700' rel='stylesheet' type='text/css'>
+	<link href='style.css' rel='stylesheet' type='text/css'>
+	<link rel="shortcut icon" href="favicon.ico" />
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+	<script src="function.js"></script>
+	<script>
+
+	var base = new Array();
+	var caricati = new Array();
+	var ciclo;
+	var count = new Array();
+	var elementi = new Array();
+	var totaleLikes = 0;
+	var totaleComments = 0;
+	var call = 0;
+	var tot = 0;
+	var call1 = 0;
+
+	//FB API
+	window.fbAsyncInit = function() {
+	FB.init({
+	  appId      : '1519278631720519',
+	  xfbml      : true,
+	  version    : 'v2.5'
+	});
+	};
+
+	(function(d, s, id){
+	 var js, fjs = d.getElementsByTagName(s)[0];
+	 if (d.getElementById(id)) {return;}
+	 js = d.createElement(s); js.id = id;
+	 js.src = "//connect.facebook.net/en_US/sdk.js";
+	 fjs.parentNode.insertBefore(js, fjs);
+	}(document, 'script', 'facebook-jssdk'));
+
+	$(document).ready(function() {
+		$('#loginbutton').click(function(event) {
+			FB.login(function(response){
+				if(response.status == 'connected'){
+					ciclo = setInterval(verificaCaricamento, 1000);
+					$('#loginbutton').hide();
+					$('#info').fadeOut('slow', function() {
+						$('#loading').fadeIn('slow');
+					});
+					
+					//Informazioni base
+					FB.api('/me', {fields: 'first_name, last_name, gender, birthday, hometown, email, website'}, function(data) {
+					  base.push({
+					  	id: data.id,
+					  	nome: data.first_name,
+					  	cognome: data.last_name,
+					  	email: data.email,
+					  });
+					  if ('gender' in data) {base[0].genere= data.gender;}
+					  if ('birthday' in data) {base[0].nascita= data.birthday;}
+					  if ('hometown' in data) {base[0].citta= data.hometown.name;}
+					  if ('email' in data) {base[0].email= data.email;}
+					  if ('website' in data) {base[0].website= data.website;}
+					  caricati.push('base');
+					});
+
+					//Get immagine di profilo
+					FB.api('/me/picture?width=480', function(photo) {
+						$('#photo-inner').css('background-image', 'url(' + photo.data.url + ')');
+					 	caricati.push('profilo');
+					});
+
+			        //VIDEO
+			        FB.api("me/videos?type=uploaded&tagged", function (videos) {
+			          if (videos && !videos.error) {
+			            nextData(videos, "video"); 
+			          }else{
+			            console.log("errore "+videos.error);
+			          }
+			        });
+
+			        //PAGINE
+			        FB.api("me/likes?limit=100", function (pagine) {
+			          if (pagine && !pagine.error) {
+			            nextData(pagine, "pagine"); 
+			          }else{
+			            console.log("errore "+pagine.error);
+			          }
+			        });
+
+			        //PAGINE BOOKS
+			        FB.api("me/books?limit=100", function (books) {
+			          if (books && !books.error) {
+			            nextData(books, "libri"); 
+			          }else{
+			            console.log("errore "+books.error);
+			          }
+			        });
+
+			        //PAGINE MOVIES
+			        FB.api("me/movies?limit=100", function (movies) {
+			          if (movies && !movies.error) {
+			            nextData(movies, "film"); 
+			          }else{
+			            console.log("errore "+movies.error);
+			          }
+			        });
+
+			        //PAGINE MUSIC
+			        FB.api("me/music?limit=100", function (music) {
+			          if (music && !music.error) {
+			            nextData(music, "musica"); 
+			          }else{
+			            console.log("errore "+music.error);
+			          }
+			        });
+
+			        //PAGINE tv
+			        FB.api("me/television?limit=100", function (tv) {
+			          if (tv && !tv.error) {
+			            nextData(tv, "tv"); 
+			          }else{
+			            console.log("errore "+tv.error);
+			          }
+			        });
+
+			        //FRIENDS
+			        FB.api("/me/friends", function (amici) {
+			          if (amici && !amici.error) {
+			            aggiungiElemento(amici.summary.total_count, 'amici');
+			            //console.log('finito amici');
+			          }else{
+			            console.log("errore "+amici.error);
+			          }
+			        });
+
+			        //ALBUMS
+			        FB.api("me/albums", function (albums) {
+						if (albums && !albums.error) {
+							nextData(albums, "albums");
+							//FOTO
+							for (var i = 0; i < albums.data.length; i++) {
+							  var albumId = albums.data[i].id;
+							  FB.api(albumId+"/photos", function (photos) {
+							    nextData(photos, "foto");
+							  });
+							};
+						}else{
+							console.log("errore "+albums.error);
+						}
+			        });
+
+			        //Post
+			        FB.api("me/feed?limit=100", function (posts) {
+			          if (posts && !posts.error) {
+			            nextData(posts, "post"); 
+			          }else{
+			            console.log("errore "+posts.error);
+			          }
+			        });
+				}else{
+					alert('Errore');
+				}
+			}, {scope: 'user_about_me, user_birthday, email, user_hometown, user_website, user_videos, user_posts, user_photos, user_likes, user_friends'});
+		});
+	});
+	
+	//Caricamento dati
+	function verificaCaricamento(){
+		console.log(caricati.length);
+		if(caricati.length == 4){
+			//console.log(elementi);
+			console.log('fine caricamento dati');
+			riordina();
+			infoBase();
+			$('#login').removeClass('active').siblings().addClass('active');
+			clearInterval(ciclo);
+		}
+	}
+	</script>
+</head>
+<body>
+	<section id="login" class="active">
+		<div id="login-box">
+			<div id="info"><img src="img/bubbles@2x.png" alt=""></div>
+			<h3 id="loading">Caricamento dati</h3>
+			<h1 id="titolo">Big <strong>Balance</strong></h1>
+			<h2 id="versione">Versione beta</h2>
+			<h3 id="loginbutton">Login a Facebook</h3>
+		</div>
+	</section>
+	<section id="app">
+		<div class="sx">
+			<div id="photo">
+				<div id="photo-inner">
+				</div>
+			</div>
+			<h1 id="name">Nome Cognome</h1>
+			<hr>
+			<p id="eta">Eta</p>
+			<p id="web">Web</p>
+			<p id="fb-id">id</p>
+			<p id="valore">Il tuo valore attuale in rapporto alla capitalizzazione di Facebook è di <span>166$</span></p>
+			<p id="totale">Ipotizzando che un 1 contenuto sia uguale a 1 $.<br>Facebook ha guadagnato</p>
+		</div>
+		<div id="canvas" class="dx">
+		</div>
+		<footer>
+			<h3 class="sx">Big <strong>Balance</strong></h3>
+			<h3 class="dx">Versione beta</h3>
+		</footer>
+	</section>
+</body>
+</html>
