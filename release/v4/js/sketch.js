@@ -17,7 +17,6 @@
 			          bubbles[j].grigio();
 			        }else{
 			          bubbles[indexHover].colore();
-			          bubbles[indexHover].move();
 			        }
 			      }
 			}else{

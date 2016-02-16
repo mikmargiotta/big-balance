@@ -46,10 +46,6 @@ function Bubble(x,y,diametro,colore,nome,massimo){
 		fill(this.coloreFill);
 		ellipse(this.x, this.y, value, value);
 	}
-	this.move = function(){
-		this.x += random(-0.5,0.5);
-		this.y += random(-0.5,0.5);
-	}
 	this.colore = function(){
 	    this.coloreFill = color(colore,50,80,80);
 		this.coloreStroke = color(colore,50,60,80);
@@ -88,9 +84,6 @@ function Bubble2(x1,y1,diametro,diametro2,colore,nome,massimo){
 	this.coloreStroke = color(colore,50,60,80);
 	this.testo = diametro2;
 
-	this.x = this.x1+this.x2;
-	this.y = this.y1+this.y2;
-
 	//easing
 	var duration = 1000/60; //60fps
 	var value = 0;
@@ -123,11 +116,7 @@ function Bubble2(x1,y1,diametro,diametro2,colore,nome,massimo){
 		strokeWeight(2);
 		stroke(this.coloreStroke);
 		fill(this.coloreFill);
-		ellipse(this.x, this.y, value, value);
-	}
-	this.move = function(){
-		this.x += random(-0.5,0.5);
-		this.y += random(-0.5,0.5);
+		ellipse(this.x1+this.x2, this.y1+this.y2, value, value);
 	}
 	this.colore = function(){
 	    this.coloreFill = color(colore,50,80,80);
