@@ -1,8 +1,9 @@
 # Big-balance
 #####Versione Beta
-V.4 [Live demo](http://www.michelemargiotta.it/lab/big-balance/)
+V.4.1 [Live demo](http://www.michelemargiotta.it/lab/big-balance/)
 
 #####Versione precedenti
+V.4 [Link](http://www.michelemargiotta.it/lab/big-balance/other/v4/)
 
 V.3 radial no easing [Link](http://www.michelemargiotta.it/lab/big-balance/other/v3-radial-no-bounce/)
 
