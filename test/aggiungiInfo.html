@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Json</title>
+	<script>
+		var sortByProperty = function (property) {
+		    return function (x, y) {
+		        return ((x[property] === y[property]) ? 0 : ((x[property] < y[property]) ? 1 : -1));
+		    };
+		};
+		var dati = '[{"totale":809,"tipo":"amici"},{"totale":1673,"tipo":"likes"},{"totale":338,"tipo":"commenti"},{"totale":4,"tipo":"film"},{"totale":5,"tipo":"tv"},{"totale":3,"tipo":"video"},{"totale":4,"tipo":"libri"},{"totale":481,"tipo":"pagine"},{"totale":24,"tipo":"musica"},{"totale":5,"tipo":"albums"},{"totale":86,"tipo":"foto"},{"totale":194,"tipo":"post"}]';
+		var elementi = JSON.parse(dati);
+		elementi= elementi.sort(sortByProperty('totale'));
+		console.log(elementi);
+	</script>
+</head>
+<body>
+	
+</body>
+</html>
